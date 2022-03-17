@@ -1,0 +1,94 @@
+python -m venv venv
+venv\Scripts\activate
+pip install django
+pip install djangorestframework
+python -m pip install django-cors-headers
+
+django-admin startproject project .
+
+python manage.py startapp app_1
+python manage.py runserver
+python manage.py createsuperuser
+
+
+
+admin
+project2021
+
+РАЗМЕЩЕНИЕ НА ХОСТЕ
+1) В разделе «Сайты» - Создаем новый сайт с именем директории newsite
+
+2) Создаем приложение на Django, для того чтобы взять еще одно доменное имя )) В разделе «Каталог CMS» - «Прочее» выбираем Django. В появившемся окне выбираем «Установить приложение» - «Начать установку».
+
+3) В разделе «Сайты» - отвязываем второе доменное имя от приложения Django и привязываем его к нашему созданному сайту.
+
+4) Идем на главную страницу хостинга и включаем доступ по SSH, для этого придется подтвердить свой номер телефона.
+
+5) На главной странице находится IP адрес и наш логин для подключения к серверу через SSH (пароль был выслан при регистрации на указанную почту.)
+
+6) Подключаемся через putty к серверу
+
+7) Переходим в папку newsite
+
+8) Скачиваем и распаковываем файл для создания виртуального окружения 
+wget https://files.pythonhosted.org/packag...
+tar xvfz virtualenv-16.6.0.tar.gz
+
+9) Создаем виртуальное окружение для нашего проекта:
+python3.6 virtualenv-16.6.0/virtualenv.py myenv
+
+10) Активируем виртуальное окружение:
+source myenv/bin/activate
+
+11) Устанавливаем Django:
+pip install django==2.2.16
+
+12) Переходим в папку public_html
+
+13) Создаем наш проект DjangoMySite на Django:
+django-admin.py startproject mysite1
+
+14) Переходим в управление хостинга и через файловый менеджер создаем файл .htacсess в папке newsite/public_html:
+Options +ExecCGI
+AddDefaultCharset utf-8
+AddHandler wsgi-script .py
+RewriteEngine On
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule ^(.*)$ DjangoMySite/DjangoMySite/wsgi.py/$1 [QSA,L] 
+
+15) Теперь редактируем файл wsgi.py в папке newsite/public_html/DjangoMySite/DjangoMySite и заменяем его следующим содержимым:
+# -*- coding: utf-8 -*-
+import os
+import sys
+import platform
+#путь к проекту, там где manage.py
+sys.path.insert(0, '/home/c/cx53558/newsite/public_html/DjangoMySite')
+#путь к фреймворку, там где settings.py
+sys.path.insert(0, '/home/c/cx53558/newsite/public_html/DjangoMySite/DjangoMySite')
+#путь к виртуальному окружению myenv
+sys.path.insert(0, '/home/c/cx53558/newsite/myenv/lib/python{0}/site-packages'.format(platform.python_version()[0:3]))
+#sys.path.insert(0, '/home/c/cx53558/newsite/myenv/lib/python3.6/site-packages')
+os.environ["DJANGO_SETTINGS_MODULE"] = "DjangoMySite.settings"
+
+from django.core.wsgi import get_wsgi_application
+application = get_wsgi_application()
+
+16) В этом файле заменяем cx53558 на ваш логин, DjangoMySite заменяем на название проекта на Django, папку newsite меняем на папку вашего сайта
+
+17) В файле settings.py из папки newsite/public_html/DjangoMySite/DjangoMySite в разрешенные хосты добавляем DNS имя нашего сайта, или для теста можно указать “*”
+
+18) Проверяем, что сайт на Django запустился и работает
+
+19) Подключаемся через FTP к нашему сайту и копируем на хостинг папку app из нашего локального проекта, так же копируем файл urls.py для навигации
+
+20) В файл settings.py из папки newsite/public_html/DjangoMySite/DjangoMySite добавляем в INSTALLED_APPS наше приложение 'app' и в конец файла добавляем STATIC_ROOT = '/home/c/cx53558/newsite/public_html/static'
+
+21) переходим cd ~/newsite/public_html/ и создаем папку mkdir static
+
+22) переходим cd ~/newsite/public_html/DjangoMySite и выполняем  ./manage.py collectstatic 
+
+23) переходим cd ~/newsite/public_html/DjangoMySite и выполняем миграцию проекта ./manage.py migrate
+
+24) Подключаемся через FTP к нашему сайту и копируем на сервер файл db.sqlite3 из нашего локального проекта
+
+25) Проверяем, что наш сайт Django на хостинге работает так же, как и локальный сайт
