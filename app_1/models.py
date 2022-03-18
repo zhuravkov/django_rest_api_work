@@ -90,3 +90,25 @@ class Order(models.Model):
     class Meta:
         verbose_name = 'Заказ'
         verbose_name_plural = 'Заказы'
+
+
+# class NaRabotu(Instrument, Material):
+#     objects = NaRabotuManager()  # Забирает только отсортированные Менеджером объекты!!!
+#     zakaz = OneToOneField(Zakaz, on_delete=PROTECT, verbose_name='Заказ', related_name="zakaz")
+#     rabotnik = ForeignKey(Rabotnik, on_delete=PROTECT, verbose_name='Работник', related_name="rabotnik")
+#     date = DateTimeField(auto_now_add=True, verbose_name='Принято к исполнению')
+#
+#     def __str__(self):
+#         return str(self.zakaz)
+#
+#     def save(self, *args, **kwargs):
+#         self.zakaz.v_rabote = True
+#         super().save(*args, **kwargs)  # Call the "real" save() method.
+#         zak = Zakaz.objects.get(id=self.zakaz.id)
+#         zak.v_rabote = True
+#         zak.save()
+#
+#     class Meta:
+#         verbose_name = 'В работе'
+#         verbose_name_plural = 'В работе'
+#         ordering = ['-date']
