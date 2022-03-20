@@ -92,23 +92,54 @@ class Order(models.Model):
         verbose_name_plural = 'Заказы'
 
 
-# class NaRabotu(Instrument, Material):
-#     objects = NaRabotuManager()  # Забирает только отсортированные Менеджером объекты!!!
-#     zakaz = OneToOneField(Zakaz, on_delete=PROTECT, verbose_name='Заказ', related_name="zakaz")
-#     rabotnik = ForeignKey(Rabotnik, on_delete=PROTECT, verbose_name='Работник', related_name="rabotnik")
-#     date = DateTimeField(auto_now_add=True, verbose_name='Принято к исполнению')
-#
-#     def __str__(self):
-#         return str(self.zakaz)
-#
-#     def save(self, *args, **kwargs):
-#         self.zakaz.v_rabote = True
-#         super().save(*args, **kwargs)  # Call the "real" save() method.
-#         zak = Zakaz.objects.get(id=self.zakaz.id)
-#         zak.v_rabote = True
-#         zak.save()
-#
-#     class Meta:
-#         verbose_name = 'В работе'
-#         verbose_name_plural = 'В работе'
-#         ordering = ['-date']
+class OrderInWork(models.Model):
+    order = models.OneToOneField(Order, on_delete=models.PROTECT, verbose_name='Заказ', related_name="order")
+    executor = models.ForeignKey(Firm, on_delete=models.PROTECT, verbose_name='Фирма-исполнитель',
+                                 related_name="firmExecutor")
+    date = DateTimeField(auto_now_add=True, verbose_name='Принято к исполнению')
+
+    def __str__(self):
+        return str(self.order)
+
+    def save(self, *args, **kwargs):
+        # self.order.in_work = True
+        super().save(*args, **kwargs)  # Call the "real" save() method.
+        order = Order.objects.get(id=self.order_id)
+        order.in_work = True
+        order.save()
+
+    class Meta:
+        verbose_name = 'Заказ в работе'
+        verbose_name_plural = 'Заказы в работе'
+        ordering = ['-date']
+
+
+
+
+class OrderInDone(models.Model):
+    # objects = NaRabotuManager()  # Забирает только отсортированные Менеджером объекты!!!
+    order = models.OneToOneField(Order, on_delete=models.PROTECT, verbose_name='Заказ', related_name="done_order")
+    executor = models.ForeignKey(Firm, on_delete=models.PROTECT, verbose_name='Фирма-исполнитель',
+                                 related_name="done_firmExecutor")
+    date = DateTimeField(auto_now_add=True, verbose_name='Заказ выполнен')
+
+    def __str__(self):
+        return str(self.order)
+
+    def save(self, *args, **kwargs):
+        # self.order.in_work = True
+        super().save(*args, **kwargs)  # Call the "real" save() method.
+        order = Order.objects.get(id=self.order_id)
+        orderInWork = OrderInWork.objects.get(order_id=self.order_id)
+        # orderInWork1 = OrderInWork.objects.all()
+        order.in_work = False
+        order.is_done = True
+        print(orderInWork)
+        # print(orderInWork1[0].__dict__)
+        orderInWork.delete()
+        order.save()
+
+    class Meta:
+        verbose_name = 'Выполненый заказ'
+        verbose_name_plural = 'Выполненные заказы'
+        ordering = ['-date']
